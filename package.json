@@ -4,6 +4,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon -r tsconfig-paths/register src/server.ts",
+    "build": "tsc",
     "start": "node -r tsconfig-paths/register dist/server.js"
   },
   "keywords": [],
@@ -12,10 +13,10 @@
   "dependencies": {
     "@types/cors": "^2.8.17",
     "@types/multer": "^1.4.12",
-    "appwrite": "^17.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "module-alias": "^2.2.3",
     "multer": "^1.4.5-lts.1",
     "node-appwrite": "^15.0.0",
     "tsconfig-paths": "^4.2.0"
@@ -27,5 +28,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   },
-  "description": ""
+  "description": "",
+  "_moduleAliases": {
+    "@": "./dist"
+  }
 }

@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import fs from "fs";
-import path from "path";
 import { ID } from "node-appwrite";
 import { storage } from "@/config";
 
@@ -51,13 +50,18 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
 export const getFileUrl = async (req: Request, res: Response): Promise<void> => {
   try {
     // Generate a public file preview URL from Appwrite
-    const fileUrl = storage.getFileView(
+    const file = await storage.getFileView(
       process.env.BUCKET_ID as string,
       req.params.fileId
     );
+    const buffer = Buffer.from(file);
 
-    // Send file URL as JSON response
-    res.json({ fileUrl });
+    // Set appropriate headers
+    res.setHeader("Content-Type", "image/png"); // Change based on file type
+    res.setHeader("Content-Length", buffer.length);
+
+    // Send file data
+    res.send(buffer);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
