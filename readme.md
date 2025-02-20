@@ -27,7 +27,7 @@ This is a **Node.js & TypeScript** backend API for managing file storage using *
 ### 1️⃣ Clone the Repository
 ```sh
 git clone https://github.com/raheelnasir/appwrite-storage-api.git
-cd appwrite-file-storage
+cd appwrite-storage-api
 ```
 
 ### 2️⃣ Install Dependencies
