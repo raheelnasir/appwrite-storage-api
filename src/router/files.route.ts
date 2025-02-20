@@ -1,6 +1,6 @@
 import express from "express";
-import { uploadFile, getFileUrl, getFileMetadata, deleteFile } from "../controller";
-import { upload } from "../config";
+import { uploadFile, getFileUrl, getFileMetadata, deleteFile } from "@/controller";
+import { upload } from "@/config";
 
 const router = express.Router();
 
@@ -28,4 +28,4 @@ router.get("/file/metadata/:fileId", getFileMetadata);
  */
 router.delete("/file/:fileId", deleteFile);
 
-export default router;
+export { router as fileRoutes };

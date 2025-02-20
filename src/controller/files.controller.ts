@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { storage } from "../config/appwrite"; // Import Appwrite Storage SDK
 import fs from "fs";
 import path from "path";
 import { ID } from "node-appwrite";
 import { InputFile } from 'node-appwrite/dist/inputFile';
+import { storage } from "@/config";
 
 /**
  * @description Uploads a file to Appwrite storage
