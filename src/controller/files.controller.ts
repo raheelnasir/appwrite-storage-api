@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
 import { ID } from "node-appwrite";
-import { InputFile } from 'node-appwrite/dist/inputFile';
 import { storage } from "@/config";
 
 /**
@@ -12,29 +11,32 @@ import { storage } from "@/config";
  */
 export const uploadFile = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Check if a file is uploaded
     if (!req.file) {
       res.status(400).json({ error: "No file uploaded" });
       return;
     }
 
-    // For Appwrite Node SDK, we need to create an InputFile
-    const file = req.file;
-    
-    // Upload file to Appwrite storage using InputFile
+    // Read file as buffer
+    const fileBuffer = fs.readFileSync(req.file.path);
+
+    // Convert buffer to File object
+    const file = new File([fileBuffer], req.file.originalname, {
+      type: req.file.mimetype,
+    });
+
+    // Upload file to Appwrite (Pass File object)
     const response = await storage.createFile(
-      process.env.BUCKET_ID as string, // Bucket ID
-      ID.unique(), // Unique file ID
-      InputFile.fromPath(file.path, file.originalname || path.basename(file.path))
+      process.env.BUCKET_ID as string,
+      ID.unique(),
+      file
     );
 
-    // Send success response
     res.status(201).json({
       message: "File uploaded successfully",
       fileId: response.$id,
     });
 
-    // Cleanup: Delete temporary file from server
+    // Cleanup: Delete temp file after upload
     fs.unlinkSync(req.file.path);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
@@ -53,7 +55,7 @@ export const getFileUrl = async (req: Request, res: Response): Promise<void> => 
       process.env.BUCKET_ID as string,
       req.params.fileId
     );
-    
+
     // Send file URL as JSON response
     res.json({ fileUrl });
   } catch (error) {
@@ -73,7 +75,7 @@ export const getFileMetadata = async (req: Request, res: Response): Promise<void
       process.env.BUCKET_ID as string,
       req.params.fileId
     );
-    
+
     // Return metadata as response
     res.json({ metadata });
   } catch (error) {
@@ -93,7 +95,7 @@ export const deleteFile = async (req: Request, res: Response): Promise<void> => 
       process.env.BUCKET_ID as string,
       req.params.fileId
     );
-    
+
     // Send success response
     res.json({ message: "File deleted successfully" });
   } catch (error) {
