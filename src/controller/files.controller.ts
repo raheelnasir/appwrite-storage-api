@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import fs from "fs";
-import { ID } from "node-appwrite";
+import { ID, Query } from "node-appwrite";
 import { storage } from "@/config";
 import { getContentTypeFromFileName } from "@/utils";
 
@@ -142,9 +142,8 @@ export const getFileUrlByName = async (
     try {
       // Query to find the file by name
       const fileList = await storage.listFiles(bucketId, [
-        `name="${fileName}"`,
+        Query.equal("name", fileName),
       ]);
-
       if (fileList.total === 0) {
         res.status(404).json({ error: "File not found" });
         return;
@@ -169,6 +168,7 @@ export const getFileUrlByName = async (
       res.status(404).json({ error: "File not found" });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: (error as Error).message });
   }
 };
