@@ -2,13 +2,17 @@ import { Request, Response } from "express";
 import fs from "fs";
 import { ID } from "node-appwrite";
 import { storage } from "@/config";
+import { getContentTypeFromFileName } from "@/utils";
 
 /**
  * @description Uploads a file to Appwrite storage
  * @route POST /upload
  * @access Public
  */
-export const uploadFile = async (req: Request, res: Response): Promise<void> => {
+export const uploadFile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.file) {
       res.status(400).json({ error: "No file uploaded" });
@@ -47,7 +51,10 @@ export const uploadFile = async (req: Request, res: Response): Promise<void> => 
  * @route GET /file/:fileId
  * @access Public
  */
-export const getFileUrl = async (req: Request, res: Response): Promise<void> => {
+export const getFileUrl = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     // Generate a public file preview URL from Appwrite
     const file = await storage.getFileView(
@@ -72,7 +79,10 @@ export const getFileUrl = async (req: Request, res: Response): Promise<void> => 
  * @route GET /file/metadata/:fileId
  * @access Public
  */
-export const getFileMetadata = async (req: Request, res: Response): Promise<void> => {
+export const getFileMetadata = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     // Fetch file metadata from Appwrite storage
     const metadata = await storage.getFile(
@@ -92,7 +102,10 @@ export const getFileMetadata = async (req: Request, res: Response): Promise<void
  * @route DELETE /file/:fileId
  * @access Public
  */
-export const deleteFile = async (req: Request, res: Response): Promise<void> => {
+export const deleteFile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     // Delete file from Appwrite storage
     await storage.deleteFile(
@@ -102,6 +115,59 @@ export const deleteFile = async (req: Request, res: Response): Promise<void> => 
 
     // Send success response
     res.json({ message: "File deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+};
+
+/**
+ * @description Retrieves a file URL by its name
+ * @route GET /file/byname/:fileName
+ * @access Public
+ */
+export const getFileUrlByName = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const fileName = req.params.fileName;
+    const bucketId = process.env.BUCKET_ID as string;
+
+    if (!fileName) {
+      res.status(400).json({ error: "Filename is required" });
+      return;
+    }
+
+    // First get the file by its name to retrieve the fileId
+    try {
+      // Query to find the file by name
+      const fileList = await storage.listFiles(bucketId, [
+        `name="${fileName}"`,
+      ]);
+
+      if (fileList.total === 0) {
+        res.status(404).json({ error: "File not found" });
+        return;
+      }
+
+      const fileId = fileList.files[0].$id;
+
+      // Get the file content
+      const file = await storage.getFileView(bucketId, fileId);
+      const buffer = Buffer.from(file);
+
+      // Determine content type from filename
+      const contentType = getContentTypeFromFileName(fileName);
+
+      // Set appropriate headers
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Content-Length", buffer.length);
+
+      // Send file data
+      res.send(buffer);
+    } catch (error) {
+      res.status(404).json({ error: "File not found" });
+    }
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
